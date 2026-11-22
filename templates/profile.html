@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile & Fitness Goals{% endblock %}
+{% block breadcrumb %}Profile & Goals{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="header-titles">
+    <h2>User Profile & Personal Goals</h2>
+    <p>Manage physical metrics, biological parameters, and daily wellness targets</p>
+  </div>
+  <div class="header-actions">
+    <a href="{{ url_for('new_profile') }}" class="btn btn-secondary btn-sm">
+      <span>+ Add New User</span>
+    </a>
+  </div>
+</div>
+
+<div class="dashboard-grid-2-1">
+  <!-- Profile & Goals Input Form -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h3><span>👤</span> {% if is_new %}Create New Profile{% else %}Edit Profile Information{% endif %}</h3>
+      <span style="font-size: 0.8rem; color: var(--text-muted);">All fields validated on submission</span>
+    </div>
+
+    <form method="POST" action="{% if is_new %}{{ url_for('new_profile') }}{% else %}{{ url_for('profile') }}{% endif %}">
+      <!-- Section 1: Personal Details -->
+      <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--emerald-neon); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.05em;">
+        1. Biometric Parameters
+      </h4>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="profName">Full Name <span class="req">*</span></label>
+          <input type="text" id="profName" name="name" class="form-control" 
+                 value="{{ profile.name if profile else '' }}" required placeholder="e.g. Arjun Sharma">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="profAge">Age (Years) <span class="req">*</span> <span class="hint">(10–120)</span></label>
+          <input type="number" id="profAge" name="age" class="form-control" min="10" max="120" 
+                 value="{{ profile.age if profile else '19' }}" required>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="profHeight">Height (Centimetres) <span class="req">*</span> <span class="hint">(50–250 cm)</span></label>
+          <input type="number" step="0.1" id="profHeight" name="height" class="form-control" min="50" max="250" 
+                 value="{{ profile.height if profile else '175.0' }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="profWeight">Weight (Kilograms) <span class="req">*</span> <span class="hint">(20–300 kg)</span></label>
+          <input type="number" step="0.1" id="profWeight" name="weight" class="form-control" min="20" max="300" 
+                 value="{{ profile.weight if profile else '68.0' }}" required>
+        </div>
+      </div>
+
+      <!-- Biological Sex for Mifflin-St Jeor equation -->
+      <div class="form-group">
+        <label class="form-label">
+          Biological Sex <span class="req">*</span>
+          <span class="hint">(Required by the Mifflin-St Jeor BMR equation)</span>
+        </label>
+        <div class="choice-cards-row">
+          <label class="choice-card-label">
+            <input type="radio" name="sex" value="male" {% if not profile or profile.sex == 'male' %}checked{% endif %}>
+            <div class="choice-card-content">
+              <div>♂️ Male</div>
+              <small style="font-size: 0.72rem; color: var(--text-faint);">+5 kcal in formula</small>
+            </div>
+          </label>
+
+          <label class="choice-card-label">
+            <input type="radio" name="sex" value="female" {% if profile and profile.sex == 'female' %}checked{% endif %}>
+            <div class="choice-card-content">
+              <div>♀️ Female</div>
+              <small style="font-size: 0.72rem; color: var(--text-faint);">-161 kcal in formula</small>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Physical Activity Level -->
+      <div class="form-group">
+        <label class="form-label" for="profActivity">
+          Daily Physical Activity Level <span class="req">*</span>
+          <span class="hint">(Used to calculate TDEE multiplier)</span>
+        </label>
+        <select id="profActivity" name="activity_level" class="form-control" style="background-color: var(--bg-input);">
+          <option value="sedentary" {% if profile and profile.activity_level == 'sedentary' %}selected{% endif %}>
+            Sedentary (1.20) — Little or no exercise; desk study schedule
+          </option>
+          <option value="light" {% if profile and profile.activity_level == 'light' %}selected{% endif %}>
+            Lightly Active (1.375) — Light exercise/sports 1-3 days/week
+          </option>
+          <option value="moderate" {% if not profile or profile.activity_level == 'moderate' %}selected{% endif %}>
+            Moderately Active (1.55) — Moderate exercise/sports 3-5 days/week
+          </option>
+          <option value="very_active" {% if profile and profile.activity_level == 'very_active' %}selected{% endif %}>
+            Very Active (1.725) — Hard exercise or sports 6-7 days/week
+          </option>
+          <option value="extra_active" {% if profile and profile.activity_level == 'extra_active' %}selected{% endif %}>
+            Extra Active (1.90) — Very hard exercise, physical work or 2x training
+          </option>
+        </select>
+      </div>
+
+      <!-- Section 2: Personal Goals -->
+      <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--cyan-neon); margin: 28px 0 14px; text-transform: uppercase; letter-spacing: 0.05em;">
+        2. Daily Fitness Goals
+      </h4>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="stepGoal">Daily Step Goal <span class="hint">(steps/day)</span></label>
+          <input type="number" id="stepGoal" name="step_goal" class="form-control" min="500" max="100000" step="500"
+                 value="{{ profile.step_goal if profile else '10000' }}" required>
+          <div class="form-hint">WHO standard recommended: 8,000–10,000 steps</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="exerciseGoal">Exercise Duration Goal <span class="hint">(minutes/day)</span></label>
+          <input type="number" id="exerciseGoal" name="exercise_goal" class="form-control" min="0" max="720" step="5"
+                 value="{{ profile.exercise_goal if profile else '45' }}" required>
+          <div class="form-hint">Recommended: 30–60 minutes daily</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="waterGoal">Water Intake Goal <span class="hint">(litres/day)</span></label>
+        <input type="number" step="0.1" id="waterGoal" name="water_goal" class="form-control" min="0.5" max="15.0"
+               value="{{ profile.water_goal if profile else '3.0' }}" required>
+        <div class="form-hint">Recommended: 2.5–3.5 litres daily</div>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; gap: 12px;">
+        <button type="submit" class="btn btn-primary">
+          <span>💾 Save Profile & Goals</span>
+        </button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Profile Metrics Summary Sidebar -->
+  <div>
+    {% if profile and fitness %}
+    <div class="glass-card" style="margin-bottom: 20px;">
+      <div class="card-title-bar">
+        <h3><span>⚡</span> Current Biometrics</h3>
+      </div>
+
+      <div style="text-align: center; padding: 14px 0 20px;">
+        <div style="font-size: 2.5rem; font-weight: 900; color: {{ fitness.bmi_info.color or 'var(--emerald-neon)' }};">
+          {{ fitness.bmi }}
+        </div>
+        <span class="badge-status {{ fitness.bmi_info.badge_class }}">
+          {{ fitness.bmi_info.category }}
+        </span>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">
+          {{ fitness.bmi_info.description }}
+        </p>
+      </div>
+
+      <div style="border-top: 1px solid var(--border-subtle); padding-top: 14px; font-size: 0.88rem;">
+        <div style="display: flex; justify-content: space-between; padding: 6px 0;">
+          <span style="color: var(--text-muted);">Basal Metabolic Rate:</span>
+          <strong>{{ fitness.bmr }} kcal</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 6px 0;">
+          <span style="color: var(--text-muted);">Estimated TDEE:</span>
+          <strong style="color: var(--cyan-neon);">{{ fitness.tdee|round|int }} kcal/day</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 6px 0;">
+          <span style="color: var(--text-muted);">Record Created:</span>
+          <span>{{ profile.created_at[:10] if profile.created_at else 'N/A' }}</span>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Educational Disclaimer Box -->
+    <div class="glass-card" style="border-left: 4px solid var(--amber-neon);">
+      <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--amber-neon); margin-bottom: 6px;">
+        Academic & Health Notice
+      </h4>
+      <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+        This software is an educational project for the Bennett University Computational Thinking and Programming course. Formulas implemented are standard physiological models and do not substitute for clinical medical evaluation.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

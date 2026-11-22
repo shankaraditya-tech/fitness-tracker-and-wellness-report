@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Project Overview - Computational Thinking & Programming{% endblock %}
+{% block breadcrumb %}Project Overview{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="header-titles">
+    <h2>Fitness Tracker & Personal Wellness Report Generator</h2>
+    <p>College-level Python project developed for Computational Thinking & Programming (2026CSAE100)</p>
+  </div>
+  <div class="header-actions">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+      <span>Launch Dashboard</span>
+      <span>→</span>
+    </a>
+  </div>
+</div>
+
+<!-- Academic Context Card -->
+<div class="glass-card" style="margin-bottom: 24px; border-left: 4px solid var(--emerald-neon);">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+    <div>
+      <span class="badge-status badge-success" style="margin-bottom: 8px;">Academic Project Specification</span>
+      <h3 style="font-size: 1.25rem; font-weight: 800; margin-top: 4px;">{{ academic.university }}</h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">
+        {{ academic.school }} • Academic Year {{ academic.academic_year }}
+      </p>
+    </div>
+    <div style="text-align: right;">
+      <div style="font-size: 0.82rem; color: var(--text-muted);">Course Code & Title</div>
+      <div style="font-size: 1rem; font-weight: 700; color: var(--cyan-neon);">
+        {{ academic.course_code }} • {{ academic.course_name }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Pathway Cards -->
+<div class="metrics-grid-4" style="margin-bottom: 28px;">
+  <a href="{{ url_for('dashboard') }}" class="glass-card stat-metric-card" style="cursor: pointer;">
+    <div class="stat-icon-wrapper emerald">📊</div>
+    <div class="stat-details">
+      <div class="label">Main Screen</div>
+      <div class="value" style="font-size: 1.2rem;">Dashboard</div>
+      <div class="subtext">Daily overview, goals & charts</div>
+    </div>
+  </a>
+
+  <a href="{{ url_for('tracker') }}" class="glass-card stat-metric-card" style="cursor: pointer;">
+    <div class="stat-icon-wrapper amber">🏃</div>
+    <div class="stat-details">
+      <div class="label">Daily Log</div>
+      <div class="value" style="font-size: 1.2rem;">Activity Tracker</div>
+      <div class="subtext">Log steps, workout & water</div>
+    </div>
+  </a>
+
+  <a href="{{ url_for('calculator') }}" class="glass-card stat-metric-card" style="cursor: pointer;">
+    <div class="stat-icon-wrapper cyan">🧮</div>
+    <div class="stat-details">
+      <div class="label">Formulas</div>
+      <div class="value" style="font-size: 1.2rem;">Calculator</div>
+      <div class="subtext">BMI, BMR & TDEE equations</div>
+    </div>
+  </a>
+
+  <a href="{{ url_for('report') }}" class="glass-card stat-metric-card" style="cursor: pointer;">
+    <div class="stat-icon-wrapper indigo">📑</div>
+    <div class="stat-details">
+      <div class="label">Academic Export</div>
+      <div class="value" style="font-size: 1.2rem;">Wellness Report</div>
+      <div class="subtext">Printable assessment & trends</div>
+    </div>
+  </a>
+</div>
+
+<!-- Computational Thinking & Python Concepts Grid -->
+<div class="dashboard-grid-1-1">
+  <!-- CT Pillars Card -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h3><span>🧩</span> Four Pillars of Computational Thinking</h3>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="padding: 12px; background-color: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--emerald-neon);">
+        <strong style="color: var(--emerald-neon);">1. Decomposition</strong>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+          Decomposed comprehensive health management into distinct functional modules: profile metrics, biometrics (BMI/BMR), daily logging, CSV file persistence, and report synthesis.
+        </p>
+      </div>
+
+      <div style="padding: 12px; background-color: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--cyan-neon);">
+        <strong style="color: var(--cyan-neon);">2. Pattern Recognition</strong>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+          Detected weekly activity streaks, workout type preferences, daily hydration consistency, and goal attainment rates across chronologically sorted CSV records.
+        </p>
+      </div>
+
+      <div style="padding: 12px; background-color: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--indigo-neon);">
+        <strong style="color: var(--indigo-neon);">3. Abstraction</strong>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+          Abstracted real-world physiological mechanics into standard mathematical formulations: Mifflin-St Jeor formula, WHO BMI indices, and exercise MET energy coefficients.
+        </p>
+      </div>
+
+      <div style="padding: 12px; background-color: var(--bg-card-elevated); border-radius: var(--radius-sm); border-left: 3px solid var(--amber-neon);">
+        <strong style="color: var(--amber-neon);">4. Algorithm Design</strong>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+          Authored step-by-step validation procedures, duplicate prevention filters, statistical mean aggregations, and automated Matplotlib headless chart generators.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Python Concepts Table -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h3><span>🐍</span> Python Concepts Demonstrated for Viva</h3>
+    </div>
+    <div class="table-responsive">
+      <table class="modern-table">
+        <thead>
+          <tr>
+            <th>Concept</th>
+            <th>Implementation in Project</th>
+            <th>File Location</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Variables & Types</strong></td>
+            <td>Type casting (int, float, str, bool)</td>
+            <td><code>fitness.py</code></td>
+          </tr>
+          <tr>
+            <td><strong>Conditionals</strong></td>
+            <td>Multi-branch if/elif/else for validation & BMI</td>
+            <td><code>fitness.py</code></td>
+          </tr>
+          <tr>
+            <td><strong>Loops & Lists</strong></td>
+            <td>List comprehensions for sums, averages & sorting</td>
+            <td><code>csv_manager.py</code></td>
+          </tr>
+          <tr>
+            <td><strong>Dictionaries</strong></td>
+            <td>Structured records for activities and profiles</td>
+            <td><code>csv_manager.py</code></td>
+          </tr>
+          <tr>
+            <td><strong>Functions</strong></td>
+            <td>Modular functions with type hints & docstrings</td>
+            <td>All modules</td>
+          </tr>
+          <tr>
+            <td><strong>Exceptions</strong></td>
+            <td>try / except / finally for file & data safety</td>
+            <td><code>csv_manager.py</code></td>
+          </tr>
+          <tr>
+            <td><strong>File Handling</strong></td>
+            <td>Reading & writing CSV with DictReader / DictWriter</td>
+            <td><code>csv_manager.py</code></td>
+          </tr>
+          <tr>
+            <td><strong>Matplotlib</strong></td>
+            <td>Dual-axis & donut charts with dark styling</td>
+            <td><code>report_generator.py</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

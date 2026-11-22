@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block title %}Fitness Calculator - BMI, BMR & TDEE{% endblock %}
+{% block breadcrumb %}Fitness Calculator{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="header-titles">
+    <h2>Fitness & Metabolic Calculator</h2>
+    <p>Scientific estimations using the Mifflin-St Jeor equation, WHO BMI indices, and activity multipliers</p>
+  </div>
+</div>
+
+<!-- Educational Disclaimer Banner -->
+<div class="notice-banner">
+  <div class="notice-icon">⚠️</div>
+  <div class="notice-text">
+    <h4>Educational Simulation Only</h4>
+    <p>
+      {{ disclaimer }}
+    </p>
+  </div>
+</div>
+
+<div class="dashboard-grid-1-1">
+  <!-- Calculator Input Controls -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h3><span>🧮</span> Interactive Parameters</h3>
+      <span style="font-size: 0.78rem; color: var(--emerald-neon);">● Real-time dynamic updates</span>
+    </div>
+
+    <form method="POST" action="{{ url_for('calculator') }}" id="liveCalcForm">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="calcAge">Age (Years) <span class="req">*</span></label>
+          <input type="number" id="calcAge" name="age" class="form-control" min="10" max="120"
+                 value="{{ calc_data.age }}" required>
+          <div class="form-hint">&lt;18 activates pediatric safety safeguards</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="calcHeight">Height (cm) <span class="req">*</span></label>
+          <input type="number" step="0.1" id="calcHeight" name="height" class="form-control" min="50" max="250"
+                 value="{{ calc_data.height }}" required>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="calcWeight">Weight (kg) <span class="req">*</span></label>
+          <input type="number" step="0.1" id="calcWeight" name="weight" class="form-control" min="20" max="300"
+                 value="{{ calc_data.weight }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Biological Sex <span class="req">*</span></label>
+          <div class="choice-cards-row" style="grid-template-columns: 1fr 1fr;">
+            <label class="choice-card-label">
+              <input type="radio" name="sex" value="male" {% if calc_data.sex == 'male' %}checked{% endif %}>
+              <div class="choice-card-content" style="padding: 10px;">
+                <div>♂️ Male</div>
+              </div>
+            </label>
+            <label class="choice-card-label">
+              <input type="radio" name="sex" value="female" {% if calc_data.sex == 'female' %}checked{% endif %}>
+              <div class="choice-card-content" style="padding: 10px;">
+                <div>♀️ Female</div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="calcActivity">Physical Activity Multiplier <span class="req">*</span></label>
+        <select id="calcActivity" name="activity_level" class="form-control" style="background-color: var(--bg-input);">
+          {% for key, val in activity_levels.items() %}
+            <option value="{{ key }}" {% if calc_data.activity_level == key %}selected{% endif %}>
+              {{ val.title }} (x{{ val.factor }}) — {{ val.description }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button type="submit" class="btn btn-primary">
+          <span>Calculate Results</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Mathematical Formulas Reference Box -->
+    <div style="margin-top: 24px;">
+      <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
+        Mathematical Formulations Used
+      </h4>
+      <div class="formula-box">
+        <strong>1. Body Mass Index (BMI):</strong><br>
+        BMI = weight (kg) / [height (m)]²
+      </div>
+      <div class="formula-box" style="border-left-color: var(--emerald-neon); color: #34d399;">
+        <strong>2. Mifflin-St Jeor BMR Equation:</strong><br>
+        Men:   BMR = (10 × W) + (6.25 × H) - (5 × A) + 5<br>
+        Women: BMR = (10 × W) + (6.25 × H) - (5 × A) - 161<br>
+        <small style="color: var(--text-faint);">W = kg, H = cm, A = age in years</small>
+      </div>
+      <div class="formula-box" style="border-left-color: var(--amber-neon); color: #fbbf24;">
+        <strong>3. Total Daily Energy Expenditure (TDEE):</strong><br>
+        TDEE = BMR × Activity Multiplier (1.20 to 1.90)
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculated Output Results -->
+  <div class="glass-card" id="calcResultsCard">
+    <div class="card-title-bar">
+      <h3><span>📊</span> Calculated Estimations</h3>
+      {% if result and result.bmi_info.is_pediatric %}
+        <span class="badge-status badge-info">Under 18 Mode</span>
+      {% else %}
+        <span class="badge-status badge-success">Adult Evaluation</span>
+      {% endif %}
+    </div>
+
+    <!-- 3 KPI Gauge Cards -->
+    <div class="calc-result-display">
+      <!-- BMI KPI -->
+      <div class="calc-kpi-card emerald">
+        <div class="kpi-label">Body Mass Index</div>
+        <div class="kpi-val" id="resBmiVal">{{ result.bmi if result else '—' }}</div>
+        <span class="badge-status {{ result.bmi_info.badge_class if result else 'badge-success' }}" id="resBmiBadge">
+          {{ result.bmi_info.category if result else 'Normal' }}
+        </span>
+      </div>
+
+      <!-- BMR KPI -->
+      <div class="calc-kpi-card cyan">
+        <div class="kpi-label">Basal Metabolic Rate</div>
+        <div class="kpi-val" id="resBmrVal">
+          {{ result.bmr|round|int if result else '—' }} <span style="font-size: 0.9rem; font-weight: 600;">kcal</span>
+        </div>
+        <div style="font-size: 0.72rem; color: var(--text-muted);">Mifflin-St Jeor base energy</div>
+      </div>
+
+      <!-- TDEE KPI -->
+      <div class="calc-kpi-card amber">
+        <div class="kpi-label">Estimated TDEE</div>
+        <div class="kpi-val" id="resTdeeVal">
+          {{ result.tdee|round|int if result else '—' }} <span style="font-size: 0.9rem; font-weight: 600;">kcal</span>
+        </div>
+        <div style="font-size: 0.72rem; color: var(--text-muted);">Daily maintenance calories</div>
+      </div>
+    </div>
+
+    <!-- BMI Contextual Description -->
+    <div style="background-color: var(--bg-card-elevated); padding: 14px; border-radius: var(--radius-md); margin-bottom: 18px;">
+      <h5 style="font-size: 0.86rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">BMI Interpretation</h5>
+      <p id="resBmiDesc" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+        {{ result.bmi_info.description if result else 'Enter parameters to view interpretation.' }}
+      </p>
+    </div>
+
+    <!-- CRITICAL SAFEGUARD: PEDIATRIC (<18) VS ADULT RECOMMENDATIONS -->
+    <!-- Pediatric Notice Container -->
+    <div id="resPediatricNotice" class="notice-banner pediatric" 
+         style="display: {% if result and result.bmi_info.is_pediatric %}flex{% else %}none{% endif %};">
+      <div class="notice-icon">🛡️</div>
+      <div class="notice-text">
+        <h4>Pediatric Growth Safeguard Active (&lt;18 Years)</h4>
+        <p>
+          As mandated by clinical pediatric guidelines, standard adult BMI categories and adult calorie deficit/surplus goals are <strong>not displayed</strong> for users under 18. Growth spurts, bone density development, and hormonal changes require personalized pediatric percentile assessments. Focus on balanced eating and regular physical play.
+        </p>
+      </div>
+    </div>
+
+    <!-- Adult Calorie Target Table (Only displayed for age >= 18) -->
+    <div id="resAdultCalorieTable" style="display: {% if not result or result.bmi_info.is_pediatric %}none{% else %}block{% endif %};">
+      <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-main); margin-bottom: 10px;">
+        Adult Calorie Target Guidelines (Educational)
+      </h4>
+      <div class="table-responsive">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Goal</th>
+              <th>Adjustment</th>
+              <th>Target Calories</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Weight Maintenance</strong></td>
+              <td>Baseline TDEE</td>
+              <td><strong style="color: var(--emerald-neon);" id="calMaintenance">{{ result.tdee_info.recommended_ranges.maintenance if (result and result.tdee_info.recommended_ranges) else '—' }} kcal</strong></td>
+            </tr>
+            <tr>
+              <td>Mild Fat Loss (-0.25 kg/wk)</td>
+              <td>-300 kcal deficit</td>
+              <td id="calMildLoss">{{ result.tdee_info.recommended_ranges.mild_weight_loss if (result and result.tdee_info.recommended_ranges) else '—' }} kcal</td>
+            </tr>
+            <tr>
+              <td>Standard Fat Loss (-0.5 kg/wk)</td>
+              <td>-500 kcal deficit</td>
+              <td id="calLoss">{{ result.tdee_info.recommended_ranges.weight_loss if (result and result.tdee_info.recommended_ranges) else '—' }} kcal</td>
+            </tr>
+            <tr>
+              <td>Muscle Growth / Surplus</td>
+              <td>+300 to +500 kcal surplus</td>
+              <td id="calGain">{{ result.tdee_info.recommended_ranges.mild_weight_gain if (result and result.tdee_info.recommended_ranges) else '—' }} kcal</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size: 0.72rem; color: var(--text-faint); margin-top: 8px;">
+        *Caloric targets are theoretical calculations and not customized medical prescriptions.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

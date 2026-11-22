@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Activity Record - {{ activity.date }}{% endblock %}
+{% block breadcrumb %}Edit Activity{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="header-titles">
+    <h2>Edit Activity Record</h2>
+    <p>Modifying recorded activity data for <strong>{{ activity.date }}</strong></p>
+  </div>
+  <div class="header-actions">
+    <a href="{{ url_for('tracker') }}" class="btn btn-secondary">
+      <span>← Back to Activity Logs</span>
+    </a>
+  </div>
+</div>
+
+<div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+  <div class="card-title-bar">
+    <h3><span>✏️</span> Edit Entry Details (ID: {{ activity.id }})</h3>
+  </div>
+
+  <form method="POST" action="{{ url_for('edit_activity', activity_id=activity.id) }}">
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="editDate">Log Date <span class="req">*</span></label>
+        <input type="date" id="editDate" name="date" class="form-control" value="{{ activity.date }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="editType">Activity Type <span class="req">*</span></label>
+        <select id="editType" name="activity_type" class="form-control" style="background-color: var(--bg-input);">
+          {% for t in activity_types %}
+            <option value="{{ t }}" {% if t == activity.activity_type %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="editSteps">Daily Steps <span class="req">*</span></label>
+        <input type="number" id="editSteps" name="steps" class="form-control" min="0" max="120000" 
+               value="{{ activity.steps }}" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="editExer">Exercise Duration (Minutes) <span class="req">*</span></label>
+        <input type="number" id="editExer" name="exercise_minutes" class="form-control" min="0" max="1440" 
+               value="{{ activity.exercise_minutes }}" required>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="editWater">Water Consumed (Litres) <span class="req">*</span></label>
+      <input type="number" step="0.1" id="editWater" name="water_litres" class="form-control" min="0" max="25" 
+             value="{{ activity.water_litres }}" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="editNotes">Workout or Dietary Notes</label>
+      <textarea id="editNotes" name="notes" class="form-control">{{ activity.notes }}</textarea>
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 24px;">
+      <button type="submit" class="btn btn-primary">
+        <span>💾 Update Record</span>
+      </button>
+      <a href="{{ url_for('tracker') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

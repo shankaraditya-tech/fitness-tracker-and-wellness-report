@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Activity Tracker - Fitness Tracker{% endblock %}
+{% block breadcrumb %}Activity Tracker{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="header-titles">
+    <h2>Daily Activity Tracker</h2>
+    <p>Record daily steps, workouts, hydration, and nutritional notes into the CSV database</p>
+  </div>
+</div>
+
+<div class="dashboard-grid-2-1">
+  <!-- Log New Activity Form -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h3><span>🏃</span> Log Daily Activity</h3>
+      <span style="font-size: 0.78rem; color: var(--emerald-neon);">● Stored in activity.csv</span>
+    </div>
+
+    <form method="POST" action="{{ url_for('tracker') }}">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="actDate">Log Date <span class="req">*</span></label>
+          <input type="date" id="actDate" name="date" class="form-control" value="{{ today }}" required>
+          <div class="form-hint">Format: YYYY-MM-DD</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="actType">Primary Activity Modality <span class="req">*</span></label>
+          <select id="actType" name="activity_type" class="form-control" style="background-color: var(--bg-input);">
+            {% for t in activity_types %}
+              <option value="{{ t }}" {% if t == 'Walking' %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="actSteps">Daily Steps Completed <span class="req">*</span></label>
+          <input type="number" id="actSteps" name="steps" class="form-control" min="0" max="120000" placeholder="e.g. 10500" required>
+          <div class="form-hint">Pedometer or fitness tracker count</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="actExer">Exercise Duration (Minutes) <span class="req">*</span></label>
+          <input type="number" id="actExer" name="exercise_minutes" class="form-control" min="0" max="1440" placeholder="e.g. 45" required>
+          <div class="form-hint">Dedicated workout session duration</div>
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" for="actWater">Water Consumed (Litres) <span class="req">*</span></label>
+          <input type="number" step="0.1" id="actWater" name="water_litres" class="form-control" min="0" max="25" placeholder="e.g. 3.2" required>
+          <div class="form-hint">Total water & fluid intake</div>
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; padding-top: 26px;">
+          <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.85rem; color: var(--text-main);">
+            <input type="checkbox" name="allow_update" value="yes" checked style="width: 18px; height: 18px; accent-color: var(--emerald-neon);">
+            <span>Update existing record if this date was already logged</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="actNotes">Optional Workout or Dietary Notes</label>
+        <textarea id="actNotes" name="notes" class="form-control" placeholder="e.g. Morning gym session at Bennett sports complex; high protein lunch."></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        <span>+ Save Activity Record</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Duplicate Prevention & Logging Instructions -->
+  <div>
+    <div class="glass-card" style="margin-bottom: 20px; border-left: 4px solid var(--cyan-neon);">
+      <div class="card-title-bar">
+        <h3><span>🛡️</span> Data Integrity Safeguards</h3>
+      </div>
+      <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px;">
+        To ensure clean statistical modeling, the system uses strict date-level integrity checks:
+      </p>
+      <ul style="font-size: 0.82rem; color: var(--text-muted); padding-left: 18px; line-height: 1.6;">
+        <li><strong>Duplicate Prevention:</strong> Prevents multiple conflicting rows for the same user on the same calendar day.</li>
+        <li><strong>In-Place Updates:</strong> If the update checkbox is checked, re-submitting an existing date safely updates your totals.</li>
+        <li><strong>Automatic Calorie Estimation:</strong> Calories burned are calculated deterministically using the Metabolic Equivalent of Task (MET) formula based on your body weight.</li>
+      </ul>
+    </div>
+
+    <!-- Quick Seed Demonstration Reminder -->
+    <div class="glass-card">
+      <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">Need Test Data for Faculty?</h4>
+      <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">
+        Click below to load 14 consecutive days of realistic college student fitness records.
+      </p>
+      <a href="{{ url_for('seed_demo') }}" class="btn btn-secondary btn-sm" style="width: 100%;">
+        🔄 Populate Bennett Demo Dataset
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ALL LOGGED ACTIVITIES TABLE -->
+<div class="glass-card" style="margin-top: 24px;">
+  <div class="card-title-bar">
+    <h3><span>📜</span> All Logged Activities ({{ activities|length }} Records)</h3>
+  </div>
+
+  <div class="table-responsive">
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Activity Type</th>
+          <th>Steps</th>
+          <th>Exercise</th>
+          <th>Water (L)</th>
+          <th>Est. Calories</th>
+          <th>Notes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if activities %}
+          {% for act in activities %}
+          <tr>
+            <td><strong>{{ act.date }}</strong></td>
+            <td>
+              <span class="activity-badge {{ act.activity_type|lower|replace('/', '') }}">
+                {{ act.activity_type }}
+              </span>
+            </td>
+            <td>{{ "{:,}".format(act.steps) }}</td>
+            <td>{{ act.exercise_minutes }} min</td>
+            <td>{{ "%.1f"|format(act.water_litres) }} L</td>
+            <td><strong style="color: var(--amber-neon);">{{ act.calories_burned }} kcal</strong></td>
+            <td style="color: var(--text-muted); max-width: 260px;">
+              {{ act.notes or '—' }}
+            </td>
+            <td>
+              <div style="display: flex; gap: 8px;">
+                <a href="{{ url_for('edit_activity', activity_id=act.id) }}" class="btn btn-secondary btn-sm" title="Edit Record">
+                  ✏️ Edit
+                </a>
+                <form method="POST" action="{{ url_for('delete_activity_route', activity_id=act.id) }}" 
+                      onsubmit="return confirm('Are you sure you want to delete the record for {{ act.date }}?');" 
+                      style="display: inline;">
+                  <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Record">
+                    🗑️
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 32px; color: var(--text-muted);">
+              No activity logs recorded yet. Use the form above to add your first day!
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

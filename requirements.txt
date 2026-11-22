@@ -1,0 +1,6 @@
+# Fitness Tracker & Personal Wellness Report Generator
+# Bennett University - Computational Thinking & Programming (2026CSAE100)
+# Technology Dependencies
+
+Flask>=3.0.0
+matplotlib>=3.8.0

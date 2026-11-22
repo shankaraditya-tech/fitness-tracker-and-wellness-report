@@ -1,0 +1,15 @@
+id,user_id,date,steps,exercise_minutes,water_litres,calories_burned,activity_type,notes,created_at
+1,1,2026-11-10,10540,50,3.2,300,Gym/Strength,Upper body workout at Bennett Gym,2026-11-23 00:17:47
+2,1,2026-11-11,9200,40,2.8,470,Running,Evening sprint laps around academic block,2026-11-23 00:17:47
+3,1,2026-11-12,11300,60,3.5,468,Sports,Badminton match with hostel wing-mates,2026-11-23 00:17:47
+4,1,2026-11-13,8450,30,2.5,126,Walking,Walk to library and dining hall,2026-11-23 00:17:47
+5,1,2026-11-14,12400,55,3.4,494,Cycling,Cycling around Greater Noida expressway trail,2026-11-23 00:17:47
+6,1,2026-11-15,9800,45,3.0,270,Gym/Strength,Leg day and core circuits,2026-11-23 00:17:47
+7,1,2026-11-16,10100,40,3.1,336,Swimming,Swimming laps at university indoor pool,2026-11-23 00:17:47
+8,1,2026-11-17,11200,50,3.3,587,Running,Morning jog before 9 AM data structures class,2026-11-23 00:17:47
+9,1,2026-11-18,8900,35,2.7,126,Yoga,Relaxing flexibility and breathwork session,2026-11-23 00:17:47
+10,1,2026-11-19,10800,45,3.2,189,Walking,Evening campus walk with study group,2026-11-23 00:17:47
+11,1,2026-11-20,13150,70,3.8,545,Sports,Inter-hostel football tournament match,2026-11-23 00:17:47
+12,1,2026-11-21,10400,50,3.2,300,Gym/Strength,Chest & shoulders workout; hydration goal met,2026-11-23 00:17:47
+13,1,2026-11-22,9650,40,2.9,470,Running,Interval sprints on sports track,2026-11-23 00:17:47
+14,1,2026-11-23,10000,60,3.0,252,Walking,,2026-11-23 00:17:47

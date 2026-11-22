@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Fitness Tracker{% endblock %}
+{% block breadcrumb %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- WELCOME & USER PROFILE HERO -->
+<div class="glass-card" style="margin-bottom: 24px; background: linear-gradient(135deg, rgba(19, 29, 51, 0.95), rgba(15, 23, 42, 0.95));">
+  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+    <div style="display: flex; align-items: center; gap: 18px;">
+      <div style="width: 64px; height: 64px; border-radius: var(--radius-full); background: linear-gradient(135deg, var(--emerald-neon), var(--cyan-neon)); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 800; color: #fff; box-shadow: 0 4px 20px var(--emerald-glow);">
+        {{ profile.name[:1] | upper }}
+      </div>
+      <div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h2 style="font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em;">
+            {{ greeting }}, {{ profile.name }}!
+          </h2>
+          <span class="badge-status {{ fitness.bmi_info.badge_class }}">
+            {{ fitness.bmi_info.category }}
+          </span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 4px;">
+          Age: <strong style="color: var(--text-main);">{{ profile.age }} yrs</strong> &bull;
+          Height: <strong style="color: var(--text-main);">{{ profile.height }} cm</strong> &bull;
+          Weight: <strong style="color: var(--text-main);">{{ profile.weight }} kg</strong> &bull;
+          Activity: <strong style="color: var(--text-main); text-transform: capitalize;">{{ profile.activity_level }}</strong>
+        </p>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <a href="{{ url_for('tracker') }}" class="btn btn-primary btn-sm">
+        <span>+ Log Activity</span>
+      </a>
+      <a href="{{ url_for('report') }}" class="btn btn-secondary btn-sm">
+        <span>📑 View Report</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- DAILY ACTIVITY OVERVIEW CARDS (LATEST LOG) -->
+<div class="card-title-bar" style="margin-bottom: 14px;">
+  <h3>
+    <span>⚡</span> Daily Activity Overview
+    <span style="font-size: 0.78rem; font-weight: 500; color: var(--text-muted);">
+      {% if latest_activity %}(Latest recorded: {{ latest_activity.date }}){% else %}(No logs yet){% endif %}
+    </span>
+  </h3>
+  <a href="{{ url_for('tracker') }}" class="card-action-link">Log New Entry &rarr;</a>
+</div>
+
+<div class="metrics-grid-4">
+  <!-- Steps Metric -->
+  <div class="glass-card stat-metric-card">
+    <div class="stat-icon-wrapper emerald">👟</div>
+    <div class="stat-details">
+      <div class="label">Steps Completed</div>
+      <div class="value">{{ "{:,}".format(today_steps) }}</div>
+      <div class="subtext">
+        <span>Goal: {{ "{:,}".format(profile.step_goal) }}</span>
+        <strong style="color: var(--emerald-neon); margin-left: auto;">{{ step_progress_pct }}%</strong>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill emerald" style="width: {{ step_progress_pct }}%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exercise Duration Metric -->
+  <div class="glass-card stat-metric-card">
+    <div class="stat-icon-wrapper amber">⏱️</div>
+    <div class="stat-details">
+      <div class="label">Exercise Duration</div>
+      <div class="value">{{ today_exercise }} <span style="font-size: 1rem; font-weight: 600; color: var(--text-muted);">min</span></div>
+      <div class="subtext">
+        <span>Goal: {{ profile.exercise_goal }} min</span>
+        <strong style="color: var(--amber-neon); margin-left: auto;">{{ exercise_progress_pct }}%</strong>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill amber" style="width: {{ exercise_progress_pct }}%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Water Intake Metric -->
+  <div class="glass-card stat-metric-card">
+    <div class="stat-icon-wrapper cyan">💧</div>
+    <div class="stat-details">
+      <div class="label">Water Intake</div>
+      <div class="value">{{ "%.1f"|format(today_water) }} <span style="font-size: 1rem; font-weight: 600; color: var(--text-muted);">L</span></div>
+      <div class="subtext">
+        <span>Goal: {{ "%.1f"|format(profile.water_goal) }} L</span>
+        <strong style="color: var(--cyan-neon); margin-left: auto;">{{ water_progress_pct }}%</strong>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill cyan" style="width: {{ water_progress_pct }}%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calories Burned Metric -->
+  <div class="glass-card stat-metric-card">
+    <div class="stat-icon-wrapper rose">🔥</div>
+    <div class="stat-details">
+      <div class="label">Calories Burned</div>
+      <div class="value">{{ "{:,}".format(today_calories) }} <span style="font-size: 1rem; font-weight: 600; color: var(--text-muted);">kcal</span></div>
+      <div class="subtext">
+        <span>Est. TDEE: {{ "{:,}".format(fitness.tdee|round|int) }} kcal</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill rose" style="width: {{ [100, (today_calories / 500 * 100)|round|int]|min }}%;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN DASHBOARD SPLIT: CHART (2/3) + GOAL PROGRESS & METRICS (1/3) -->
+<div class="dashboard-grid-2-1">
+  <!-- Weekly Activity Matplotlib Chart -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h3><span>📊</span> Weekly Activity & Target Progress</h3>
+      <a href="{{ url_for('progress') }}" class="card-action-link">Full Analytics &rarr;</a>
+    </div>
+
+    {% if weekly_chart_url %}
+    <div class="chart-container-box">
+      <img src="{{ url_for('static', filename=weekly_chart_url) }}" alt="Weekly Activity Chart" loading="lazy">
+    </div>
+    {% else %}
+    <div style="padding: 40px; text-align: center; color: var(--text-muted);">
+      <p>No activity records available yet to generate visual charts.</p>
+      <a href="{{ url_for('tracker') }}" class="btn btn-primary btn-sm" style="margin-top: 12px;">Log Your First Day</a>
+    </div>
+    {% endif %}
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 0.8rem; color: var(--text-muted);">
+      <span>Chart rendered dynamically via Python Matplotlib</span>
+      <span style="color: var(--emerald-neon);">● Real CSV Data Logs</span>
+    </div>
+  </div>
+
+  <!-- Personal Goal Progress & Streaks -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h3><span>🎯</span> Goal Achievement</h3>
+      <a href="{{ url_for('profile') }}" class="card-action-link">Adjust &rarr;</a>
+    </div>
+
+    <!-- Active Streak Badge -->
+    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.12)); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-md); padding: 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 14px;">
+      <div style="font-size: 2rem;">🔥</div>
+      <div>
+        <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);">
+          {{ stats.current_streak }} Day Streak
+        </div>
+        <div style="font-size: 0.78rem; color: var(--text-muted);">
+          Total {{ stats.total_days }} days logged in database
+        </div>
+      </div>
+    </div>
+
+    <!-- Step Goal -->
+    <div class="goal-progress-card">
+      <div class="goal-card-top">
+        <span class="goal-title">👟 Step Target</span>
+        <span class="goal-pct-pill emerald">{{ stats.step_goal_completion_pct }}% met</span>
+      </div>
+      <div class="goal-numbers">
+        {{ stats.step_goal_met_days }} of {{ stats.total_days }} days completed (Goal: {{ "{:,}".format(profile.step_goal) }})
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill emerald" style="width: {{ stats.step_goal_completion_pct }}%;"></div>
+      </div>
+    </div>
+
+    <!-- Exercise Goal -->
+    <div class="goal-progress-card">
+      <div class="goal-card-top">
+        <span class="goal-title">⏱️ Workout Target</span>
+        <span class="goal-pct-pill amber">{{ stats.exercise_goal_completion_pct }}% met</span>
+      </div>
+      <div class="goal-numbers">
+        {{ stats.exercise_goal_met_days }} of {{ stats.total_days }} days completed (Goal: {{ profile.exercise_goal }} min)
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill amber" style="width: {{ stats.exercise_goal_completion_pct }}%;"></div>
+      </div>
+    </div>
+
+    <!-- Water Goal -->
+    <div class="goal-progress-card">
+      <div class="goal-card-top">
+        <span class="goal-title">💧 Hydration Target</span>
+        <span class="goal-pct-pill cyan">{{ stats.water_goal_completion_pct }}% met</span>
+      </div>
+      <div class="goal-numbers">
+        {{ stats.water_goal_met_days }} of {{ stats.total_days }} days completed (Goal: {{ "%.1f"|format(profile.water_goal) }} L)
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill cyan" style="width: {{ stats.water_goal_completion_pct }}%;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECENT ACTIVITY HISTORY TABLE -->
+<div class="glass-card">
+  <div class="card-title-bar">
+    <h3><span>📋</span> Recent Activity Logs</h3>
+    <a href="{{ url_for('tracker') }}" class="card-action-link">View All Records ({{ stats.total_days }}) &rarr;</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="modern-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Activity</th>
+          <th>Steps</th>
+          <th>Exercise</th>
+          <th>Water</th>
+          <th>Calories</th>
+          <th>Notes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if recent_activities %}
+          {% for act in recent_activities %}
+          <tr>
+            <td><strong>{{ act.date }}</strong></td>
+            <td>
+              <span class="activity-badge {{ act.activity_type|lower|replace('/', '') }}">
+                {{ act.activity_type }}
+              </span>
+            </td>
+            <td>{{ "{:,}".format(act.steps) }}</td>
+            <td>{{ act.exercise_minutes }} min</td>
+            <td>{{ "%.1f"|format(act.water_litres) }} L</td>
+            <td><strong style="color: var(--amber-neon);">{{ act.calories_burned }} kcal</strong></td>
+            <td style="color: var(--text-muted); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              {{ act.notes or '—' }}
+            </td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                <a href="{{ url_for('edit_activity', activity_id=act.id) }}" class="btn btn-secondary btn-sm" title="Edit Log">✏️</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 24px; color: var(--text-muted);">
+              No activity logs found. <a href="{{ url_for('tracker') }}" style="color: var(--emerald-neon);">Click here to log activity</a>.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

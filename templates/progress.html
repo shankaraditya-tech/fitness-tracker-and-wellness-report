@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Progress & Statistical Analytics - Fitness Tracker{% endblock %}
+{% block breadcrumb %}Progress Analytics{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="header-titles">
+    <h2>Progress & Statistical Analysis</h2>
+    <p>Comprehensive historical aggregates, goal completion trends, and Matplotlib visualizations</p>
+  </div>
+  <div class="header-actions">
+    <a href="{{ url_for('report') }}" class="btn btn-primary">
+      <span>📑 View Formal Report</span>
+    </a>
+  </div>
+</div>
+
+<!-- 4 PRIMARY KPI SUMMARY CARDS -->
+<div class="metrics-grid-4">
+  <!-- Average Steps -->
+  <div class="glass-card stat-metric-card">
+    <div class="stat-icon-wrapper emerald">📈</div>
+    <div class="stat-details">
+      <div class="label">Average Daily Steps</div>
+      <div class="value">{{ "{:,}".format(stats.avg_steps) }}</div>
+      <div class="subtext">
+        <span>Goal: {{ "{:,}".format(profile.step_goal) }}</span>
+        <strong style="color: var(--emerald-neon); margin-left: auto;">
+          {{ stats.step_goal_completion_pct }}% days met
+        </strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Average Exercise -->
+  <div class="glass-card stat-metric-card">
+    <div class="stat-icon-wrapper amber">⏱️</div>
+    <div class="stat-details">
+      <div class="label">Average Workout</div>
+      <div class="value">{{ stats.avg_exercise_minutes }} <span style="font-size: 1rem; font-weight: 600; color: var(--text-muted);">min</span></div>
+      <div class="subtext">
+        <span>Goal: {{ profile.exercise_goal }} min</span>
+        <strong style="color: var(--amber-neon); margin-left: auto;">
+          {{ stats.exercise_goal_completion_pct }}% days met
+        </strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Average Water Intake -->
+  <div class="glass-card stat-metric-card">
+    <div class="stat-icon-wrapper cyan">💧</div>
+    <div class="stat-details">
+      <div class="label">Average Hydration</div>
+      <div class="value">{{ "%.2f"|format(stats.avg_water_litres) }} <span style="font-size: 1rem; font-weight: 600; color: var(--text-muted);">L</span></div>
+      <div class="subtext">
+        <span>Goal: {{ "%.1f"|format(profile.water_goal) }} L</span>
+        <strong style="color: var(--cyan-neon); margin-left: auto;">
+          {{ stats.water_goal_completion_pct }}% days met
+        </strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Logged Days & Active Streak -->
+  <div class="glass-card stat-metric-card">
+    <div class="stat-icon-wrapper indigo">📅</div>
+    <div class="stat-details">
+      <div class="label">Total Logged Days</div>
+      <div class="value">{{ stats.total_days }} <span style="font-size: 1rem; font-weight: 600; color: var(--text-muted);">days</span></div>
+      <div class="subtext">
+        <span style="color: var(--emerald-neon);">🔥 Active Streak: {{ stats.current_streak }} days</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WEIGHT & AGGREGATE STATS STRIP -->
+<div class="glass-card" style="margin-bottom: 28px; background: linear-gradient(135deg, rgba(19, 29, 51, 0.9), rgba(15, 23, 42, 0.9));">
+  <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 20px; text-align: center;">
+    <div>
+      <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Recorded Weight</div>
+      <div style="font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin-top: 4px;">{{ profile.weight }} kg</div>
+      <div style="font-size: 0.75rem; color: var(--emerald-neon);">Stable Wellness Range</div>
+    </div>
+
+    <div style="width: 1px; height: 45px; background: var(--border-subtle);"></div>
+
+    <div>
+      <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Total Steps Walked</div>
+      <div style="font-size: 1.6rem; font-weight: 800; color: var(--emerald-neon); margin-top: 4px;">{{ "{:,}".format(stats.total_steps) }}</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted);">Cumulative steps count</div>
+    </div>
+
+    <div style="width: 1px; height: 45px; background: var(--border-subtle);"></div>
+
+    <div>
+      <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Total Workout Time</div>
+      <div style="font-size: 1.6rem; font-weight: 800; color: var(--amber-neon); margin-top: 4px;">{{ stats.total_exercise_minutes }} min</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted);">{{ "%.1f"|format(stats.total_exercise_minutes / 60) }} hours total training</div>
+    </div>
+
+    <div style="width: 1px; height: 45px; background: var(--border-subtle);"></div>
+
+    <div>
+      <div style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Best Single Day Steps</div>
+      <div style="font-size: 1.6rem; font-weight: 800; color: var(--cyan-neon); margin-top: 4px;">
+        {{ "{:,}".format(stats.best_steps_day.steps) if stats.best_steps_day else '—' }}
+      </div>
+      <div style="font-size: 0.75rem; color: var(--text-muted);">
+        {{ stats.best_steps_day.date if stats.best_steps_day else 'N/A' }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MATPLOTLIB CHARTS SECTION -->
+<div class="card-title-bar">
+  <h3><span>📊</span> Visual Analytics (Generated via Matplotlib)</h3>
+  <span style="font-size: 0.8rem; color: var(--text-muted);">Headless backend rendering with dark theme styling</span>
+</div>
+
+<!-- Row 1: Weekly Dual-Axis Chart & Distribution Donut -->
+<div class="dashboard-grid-2-1" style="margin-bottom: 24px;">
+  <!-- Chart 1: Weekly Activity & Goals -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h3><span>👟</span> Weekly Steps vs. Target (Dual-Axis)</h3>
+    </div>
+    {% if weekly_chart %}
+    <div class="chart-container-box">
+      <img src="{{ url_for('static', filename=weekly_chart) }}" alt="Weekly Activity Chart">
+    </div>
+    {% else %}
+    <p style="padding: 30px; text-align: center; color: var(--text-muted);">No activity data to graph.</p>
+    {% endif %}
+  </div>
+
+  <!-- Chart 2: Modality Distribution -->
+  <div class="glass-card">
+    <div class="card-title-bar">
+      <h3><span>🍩</span> Exercise Modality Breakdown</h3>
+    </div>
+    {% if dist_chart %}
+    <div class="chart-container-box">
+      <img src="{{ url_for('static', filename=dist_chart) }}" alt="Exercise Distribution Donut Chart">
+    </div>
+    {% else %}
+    <p style="padding: 30px; text-align: center; color: var(--text-muted);">No activity distribution data.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Row 2: Hydration Progression Chart -->
+<div class="glass-card">
+  <div class="card-title-bar">
+    <h3><span>💧</span> Hydration Progression & Daily Intake Tracking</h3>
+  </div>
+  {% if hydration_chart %}
+  <div class="chart-container-box">
+    <img src="{{ url_for('static', filename=hydration_chart) }}" alt="Hydration Progression Chart">
+  </div>
+  {% else %}
+  <p style="padding: 30px; text-align: center; color: var(--text-muted);">No hydration records available.</p>
+  {% endif %}
+</div>
+{% endblock %}
